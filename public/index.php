@@ -10,6 +10,9 @@ use \LINE\LINEBot\HTTPClient\CurlHTTPClient;
 use \LINE\LINEBot\MessageBuilder\MultiMessageBuilder;
 use \LINE\LINEBot\MessageBuilder\TextMessageBuilder;
 use \LINE\LINEBot\MessageBuilder\StickerMessageBuilder;
+use \LINE\LINEBot\MessageBuilder\AudioMessageBuilder;
+use \LINE\LINEBot\MessageBuilder\ImageMessageBuilder;
+use \LINE\LINEBot\MessageBuilder\VideoMessageBuilder;
 use \LINE\LINEBot\SignatureValidator as SignatureValidator;
  
 $pass_signature = true;
@@ -50,8 +53,30 @@ $app->post('/webhook', function (Request $request, Response $response) use ($cha
             return $response->withStatus(400, 'Invalid signature');
         }
     }
+ 
     
-// kode aplikasi nanti disini
+// kode aplikasi 
+
+$data = json_decode($body, true);
+if (is_array($data['events'])) {
+    foreach ($data['events'] as $event) {
+        if ($event['type'] == 'message')
+        {
+            if ($event['message']['type'] == 'text')
+            {
+                //send message as reply to user
+                $result = $bot->replyText($event['replyToken'], $event['message']['text']);
+
+
+                $response->getBody()->write(json_encode($result->getJSONDecodeBody()));
+                return $response
+                    ->withHeader('Content-Type', 'application/json')
+                    ->withStatus($result->getHTTPStatus());
+            }
+        }
+    }
+    return $response->withStatus(200, 'for Webhook!'); //untuk ngasih respon 200 saat verify webhook
+}
  
 });
 $app->run();
