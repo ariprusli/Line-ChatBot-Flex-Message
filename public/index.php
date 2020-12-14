@@ -85,7 +85,7 @@ $app->get('/pushmessage', function ($req, $response) use ($bot) {
     $userId = 'U1132cb95ebc8fcf91f45bd9430d991f5';
     $stickerMessageBuilder = new StickerMessageBuilder(1, 106);
     $textMessageBuilder = new TextMessageBuilder('Halo, ini pesan push');
-    $result = $bot->pushMessage($userId, $textMessageBuilder);
+    $result = $bot->pushMessage($userId, $stickerMessageBuilder);
  
     $response->getBody()->write("Pesan push berhasil dikirim!");
     return $response
