@@ -57,6 +57,29 @@ $app->post('/webhook', function (Request $request, Response $response) use ($cha
     
 // kode aplikasi 
 
+$data = json_decode($body, true);
+    if (is_array($data['events'])) {
+        foreach ($data['events'] as $event) {
+            if ($event['type'] == 'message')
+            {
+                if ($event['message']['type'] == 'text')
+                {
+                    //send message as reply to user
+                    $result = $bot->replyText($event['replyToken'], $event['message']['text']);
+
+
+                    $response->getBody()->write(json_encode($result->getJSONDecodeBody()));
+                    return $response
+                        ->withHeader('Content-Type', 'application/json')
+                        ->withStatus($result->getHTTPStatus());
+                }
+            }
+        }
+        return $response->withStatus(200, 'for Webhook!'); //untuk ngasih respon 200 saat verify webhook
+    }
+    return $response->withStatus(400, 'No event sent!');
+});
+
 $app->get('/pushmessage', function($req, $response) use ($bot){
     // send push message to user
 
@@ -71,26 +94,5 @@ $app->get('/pushmessage', function($req, $response) use ($bot){
         ->withStatus($result->getHTTPStatus());
 });
 
-$data = json_decode($body, true);
-if (is_array($data['events'])) {
-    foreach ($data['events'] as $event) {
-        if ($event['type'] == 'message')
-        {
-            if ($event['message']['type'] == 'text')
-            {
-                //send message as reply to user
-                $result = $bot->replyText($event['replyToken'], $event['message']['text']);
 
-
-                $response->getBody()->write(json_encode($result->getJSONDecodeBody()));
-                return $response
-                    ->withHeader('Content-Type', 'application/json')
-                    ->withStatus($result->getHTTPStatus());
-            }
-        }
-    }
-    return $response->withStatus(200, 'for Webhook!'); //untuk ngasih respon 200 saat verify webhook
-}
- 
-});
 $app->run();
