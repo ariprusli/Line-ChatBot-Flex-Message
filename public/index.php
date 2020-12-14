@@ -80,14 +80,13 @@ $data = json_decode($body, true);
     return $response->withStatus(400, 'No event sent!');
 });
 
-$app->get('/pushmessage', function($req, $response) use ($bot){
+$app->get('/pushmessage', function ($req, $response) use ($bot) {
     // send push message to user
-
     $userId = 'U1132cb95ebc8fcf91f45bd9430d991f5';
-    $textMessageBuilder = new TextMessageBuilder('Halo, ini pesan push');
     $stickerMessageBuilder = new StickerMessageBuilder(1, 106);
+    $textMessageBuilder = new TextMessageBuilder('Halo, ini pesan push');
     $result = $bot->pushMessage($userId, $textMessageBuilder, $stickerMessageBuilder);
-
+ 
     $response->getBody()->write("Pesan push berhasil dikirim!");
     return $response
         ->withHeader('Content-Type', 'application/json')
