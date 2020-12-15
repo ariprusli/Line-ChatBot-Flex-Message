@@ -90,7 +90,7 @@ $data = json_decode($body, true);
  
                     } else {
                         // send same message as reply to user
-                        $result = $bot->replyText($event['replyToken'], $event['message']['text']);
+                        
                     }
  
                     $response->getBody()->write($result->getJSONDecodedBody());
