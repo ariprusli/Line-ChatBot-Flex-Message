@@ -1,6 +1,4 @@
 <?php
-$app->post('/webhook', function (Request $request, Response $response) use ($channel_secret, $bot, $httpClient, $pass_signature){
-
     require __DIR__ . '/../vendor/autoload.php';
     
     use Psr\Http\Message\ResponseInterface as Response;
@@ -59,22 +57,30 @@ $app->post('/webhook', function (Request $request, Response $response) use ($cha
         
     // kode aplikasi 
 
-    $data = json_decode($body, true);
+        $data = json_decode($body, true);
         if (is_array($data['events'])) {
             foreach ($data['events'] as $event) {
-                if ($event['type'] == 'message')
-                {
-                    if ($event['message']['type'] == 'text'){
-                    if (strtolower($event['message']['text']) == 'user id') {
-                        
-
-                        $result = $bot->replyText($event['replyToken'], $event['source']['userId']);
-
-                        } elseif (strtolower($event['message']['text']) == 'felx message'){
-                            $flexTemplate = file_get_contents("../flex_message.json"); //template flex message
+                if ($event['type'] == 'message') {
+                    // message from group / room
+                    if ($event['source']['type'] == 'group' or
+                        $event['source']['type'] == 'room'
+                    ) {
+    
+                        ...
+    
+                    // message from single user
+                    } else {
+                        if ($event['message']['type'] == 'text') {
+                        if (strtolower($event['message']['text']) == 'user id') {
+    
+                            $result = $bot->replyText($event['replyToken'], $event['source']['userId']);
+    
+                        } elseif (strtolower($event['message']['text']) == 'flex message') {
+    
+                            $flexTemplate = file_get_contents("../flex_message.json"); // template flex message
                             $result = $httpClient->post(LINEBot::DEFAULT_ENDPOINT_BASE . '/v2/bot/message/reply', [
                                 'replyToken' => $event['replyToken'],
-                                'message' => [
+                                'messages'   => [
                                     [
                                         'type'     => 'flex',
                                         'altText'  => 'Test Flex Message',
@@ -82,21 +88,24 @@ $app->post('/webhook', function (Request $request, Response $response) use ($cha
                                     ]
                                 ],
                             ]);
-
-                        }else{
-                        //send message as reply to user
-                        $result = $bot->replyText($event['replyToken'], $event['message']['text']);
-
-
-                        $response->getBody()->write(json_encode($result->getJSONDecodeBody()));
+    
+                        } else {
+                            // send same message as reply to user
+                            $result = $bot->replyText($event['replyToken'], $event['message']['text']);
+                        }
+    
+                        $response->getBody()->write($result->getJSONDecodedBody());
                         return $response
                             ->withHeader('Content-Type', 'application/json')
                             ->withStatus($result->getHTTPStatus());
                     }
+                        ...
+    
+                    }
                 }
             }
-            return $response->withStatus(200, 'for Webhook!'); //untuk ngasih respon 200 saat verify webhook
         }
+    
         return $response->withStatus(400, 'No event sent!');
     });
 
